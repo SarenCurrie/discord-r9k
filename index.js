@@ -21,6 +21,12 @@ bot.on('ready', () => {
     });
 
     bot.on('message', (user, userId, channelId, message, event) => {
+
+      //ignore events channel
+      if (channelId === '262864567695048705') {
+        return;
+      }
+
       if (message === '!ping') {
         bot.sendMessage({
           to: channelId,
