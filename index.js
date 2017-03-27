@@ -16,7 +16,7 @@ bot.on('disconnect', () => {
 });
 
 bot.on('message', (user, userId, channelId, message, event) => {
-  if (message === 'ping') {
+  if (message === '!ping') {
     bot.sendMessage({
       to: channelId,
       message: 'pong',
