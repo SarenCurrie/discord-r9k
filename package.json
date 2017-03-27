@@ -1,7 +1,8 @@
 {
-  "name": "discord-bot-testing",
+  "name": "discord-r9k",
   "version": "0.1.0",
-  "description": "",
+  "description": "Experimental robot 9000 for discord",
+  "repsoitory": "https://github.com/SarenCurrie/discord-r9k",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/eslint ."
@@ -18,7 +19,8 @@
     }
   },
   "dependencies": {
-    "discord.io": "^2.5.1"
+    "discord.io": "^2.5.1",
+    "lokijs": "^1.4.3"
   },
   "devDependencies": {
     "eslint": "^3.18.0",
