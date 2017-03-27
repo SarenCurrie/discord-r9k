@@ -16,19 +16,21 @@ bot.on('disconnect', function(errMsg, code) {
 });
 
 bot.on('message', function(user, userId, channelId, message, event) {
-  if (message === "ping") {
+  if (message === 'ping') {
     bot.sendMessage({
       to: channelId,
-      message: "pong"
+      message: 'pong'
     });
-  } else if (previousMessages.includes(message)) {
-    bot.deleteMessage({
-      channelID: channelId,
-      messageID: event.d.id
-    }, (err) => {
-      console.log(err);
-    });
-  } else {
-    previousMessages.push(message);
+  } else if (user !== bot.username) {
+    if (previousMessages.includes(message)) {
+      bot.deleteMessage({
+        channelID: channelId,
+        messageID: event.d.id
+      }, (err) => {
+        console.log(err);
+      });
+    } else {
+      previousMessages.push(message);
+    }
   }
 });
