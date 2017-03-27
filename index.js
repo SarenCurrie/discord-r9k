@@ -26,7 +26,7 @@ bot.on('ready', () => {
         return;
       }
 
-      if (message.match(/saren/i)) {
+      if (message.match(/saren/i) && user !== bot.username) {
         bot.sendMessage({
           to: channelId,
           message: 'Who is this Saren character??? Hey Scur do you know who Saren is??',
