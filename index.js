@@ -21,10 +21,16 @@ bot.on('ready', () => {
     });
 
     bot.on('message', (user, userId, channelId, message, event) => {
-
-      //ignore events channel
+      // ignore events channel
       if (channelId === '262864567695048705') {
         return;
+      }
+
+      if (message.match(/saren/i)) {
+        bot.sendMessage({
+          to: channelId,
+          message: 'Who is this Saren character??? Hey Scur do you know who Saren is??',
+        });
       }
 
       if (message === '!ping') {
@@ -45,11 +51,6 @@ bot.on('ready', () => {
             to: channelId,
             message: `Battery status: ${stdout}`,
           });
-        });
-      } else if (message.match(/saren/i)) {
-        bot.sendMessage({
-          to: channelId,
-          message: 'Who is this Saren character??? Hey Scur do you know who Saren is??'
         });
       } else if (user !== bot.username) {
         persistence.checkMessage(message, () => {
