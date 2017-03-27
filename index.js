@@ -46,6 +46,11 @@ bot.on('ready', () => {
             message: `Battery status: ${stdout}`,
           });
         });
+      } else if (message.match(/saren/i)) {
+        bot.sendMessage({
+          to: channelId,
+          message: 'Who is this Saren character??? Hey Scur do you know who Saren is??'
+        });
       } else if (user !== bot.username) {
         persistence.checkMessage(message, () => {
           console.log(`message exists: ${message}`);
