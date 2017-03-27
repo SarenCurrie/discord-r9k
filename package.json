@@ -4,11 +4,28 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/eslint ."
   },
   "author": "Saren Currie",
   "license": "MIT",
+  "eslintConfig": {
+    "extends": "eslint-config-airbnb",
+    "env": {
+      "node": true
+    },
+    "rules": {
+      "no-console": 0
+    }
+  },
   "dependencies": {
     "discord.io": "^2.5.1"
+  },
+  "devDependencies": {
+    "eslint": "^3.18.0",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-config-airbnb-base": "^11.1.2",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^4.0.0",
+    "eslint-plugin-react": "^6.10.3"
   }
 }

@@ -1,31 +1,31 @@
-var Discord = require('discord.io');
+const Discord = require('discord.io');
 
-var bot = new Discord.Client({
+const bot = new Discord.Client({
   token: process.env.DISCORD_TOKEN,
-  autorun: true
+  autorun: true,
 });
 
 const previousMessages = [];
 
-bot.on('ready', function() {
+bot.on('ready', () => {
   console.log('Logged in as %s - %s\n', bot.username, bot.id);
 });
 
-bot.on('disconnect', function(errMsg, code) {
+bot.on('disconnect', () => {
   bot.connect();
 });
 
-bot.on('message', function(user, userId, channelId, message, event) {
+bot.on('message', (user, userId, channelId, message, event) => {
   if (message === 'ping') {
     bot.sendMessage({
       to: channelId,
-      message: 'pong'
+      message: 'pong',
     });
   } else if (user !== bot.username) {
     if (previousMessages.includes(message)) {
       bot.deleteMessage({
         channelID: channelId,
-        messageID: event.d.id
+        messageID: event.d.id,
       }, (err) => {
         console.log(err);
       });
