@@ -20,7 +20,7 @@ bot.on('ready', () => {
       bot.connect();
     });
 
-    bot.on('message', (user, userId, channelId, message, event) => {
+    const handleMessage = (user, userId, channelId, message, event) => {
       // ignore events channel
       if (channelId === '262864567695048705') {
         return;
@@ -64,6 +64,14 @@ bot.on('ready', () => {
             }
           });
         }, () => console.log(`message is new: ${message}`), err => console.error(err));
+      }
+    };
+
+    bot.on('message', handleMessage);
+
+    bot.on('any', (event) => {
+      if (event.t === 'MESSAGE_UPDATE') {
+        handleMessage(event.d.author.username, event.d.author.id, event.d.channel_id, event.d.content, event);
       }
     });
   });
