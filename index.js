@@ -71,7 +71,11 @@ bot.on('ready', () => {
 
     bot.on('any', (event) => {
       if (event.t === 'MESSAGE_UPDATE') {
-        handleMessage(event.d.author.username, event.d.author.id, event.d.channel_id, event.d.content, event);
+        handleMessage(event.d.author ? event.d.author.username : null,
+            event.d.author ? event.d.author.id : null,
+            event.d.channel_id,
+            event.d.content,
+            event);
       }
     });
   });
