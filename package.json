@@ -15,7 +15,13 @@
       "node": true
     },
     "rules": {
-      "no-console": 0
+      "no-console": 0,
+      "max-len": ["error", {
+        "code": 140,
+        "tabWidth": 1,
+        "ignoreUrls": true,
+        "ignoreTrailingComments": true
+      }]
     }
   },
   "dependencies": {
