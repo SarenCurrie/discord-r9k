@@ -12,47 +12,89 @@ const bot = new Discord.Client({
   autorun: true,
 });
 
+const isEvents = channel => channel === '262864567695048705';
+
 bot.on('ready', () => {
   persistence.init(() => {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
+
+    const triggers = [];
 
     bot.on('disconnect', () => {
       bot.connect();
     });
 
+    const addMessage = (trigger, action, ignoreEvents = true) => {
+      if (trigger instanceof Array) {
+        for (let i = 0; i < trigger.length; i += 1) {
+          triggers.push({ trigger: trigger[i], action });
+        }
+      } else {
+        triggers.push({ trigger, action, ignoreEvents });
+      }
+    };
+
+    addMessage('!ping', () => 'pong');
+    addMessage(/saren/i, () => 'Who is this Saren character??? Hey Scur do you know who Saren is??');
+    addMessage(['!status', '!battery'], (opts) => {
+      exec('cat /sys/class/power_supply/BAT0/status', (error, stdout) => {
+        if (error) {
+          opts.bot.sendMessage({
+            to: opts.channelId,
+            message: 'Error getting status!',
+          });
+          return;
+        }
+        opts.bot.sendMessage({
+          to: opts.channelId,
+          message: `Battery status: ${stdout}`,
+        });
+      });
+    });
+
     const handleMessage = (user, userId, channelId, message, event) => {
-      // ignore events channel
-      if (channelId === '262864567695048705') {
-        return;
-      }
-
-      if (message.match(/saren/i) && user !== bot.username) {
-        bot.sendMessage({
-          to: channelId,
-          message: 'Who is this Saren character??? Hey Scur do you know who Saren is??',
+      let wasTrigger = false;
+      const doTrigger = (trigger, matches) => {
+        wasTrigger = true;
+        const result = trigger.action({
+          user,
+          userId,
+          channelId,
+          message,
+          event,
+          bot,
+          matches,
         });
-      }
 
-      if (message === '!ping') {
-        bot.sendMessage({
-          to: channelId,
-          message: 'pong',
-        });
-      } else if (message === '!status') {
-        exec('cat /sys/class/power_supply/BAT0/status', (error, stdout) => {
-          if (error) {
-            bot.sendMessage({
-              to: channelId,
-              message: 'Error getting status!',
-            });
-            return;
-          }
+        if (result) {
           bot.sendMessage({
             to: channelId,
-            message: `Battery status: ${stdout}`,
+            message,
           });
-        });
-      } else if (user !== bot.username) {
+        }
+      };
+
+      for (let i = 0; i < triggers.length; i += 1) {
+        const trigger = triggers[i];
+
+        // ignore events channel
+        if (trigger.ignoreEvents && isEvents(channelId)) {
+          // Skipping because this is the events channel.
+        } else if (trigger.trigger instanceof RegExp) {
+          const matches = message.match(trigger.trigger);
+          if (matches) {
+            doTrigger(trigger, matches);
+          }
+        } else if (trigger instanceof Function) {
+          if (trigger()) {
+            doTrigger(trigger);
+          }
+        } else if (message === trigger.trigger) {
+          doTrigger(trigger);
+        }
+      }
+
+      if (!wasTrigger && user !== bot.username && isEvents(channelId)) {
         persistence.checkMessage(message, () => {
           console.log(`message exists: ${message}`);
           bot.deleteMessage({
