@@ -52,7 +52,8 @@ bot.on('ready', () => {
       });
     });
     addMessage('!events',
-        opts => (isEvents(opts.channelId) ? 'Check out the pinned messages!' : 'Check out the pinned messages in the #Events channel!'));
+        opts => (isEvents(opts.channelId) ? 'Check out the pinned messages!' : 'Check out the pinned messages in the #Events channel!'),
+        false);
 
     const handleMessage = (user, userId, channelId, message, event) => {
       let wasTrigger = false;
