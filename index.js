@@ -87,8 +87,8 @@ bot.on('ready', () => {
           if (matches) {
             doTrigger(trigger, matches);
           }
-        } else if (trigger instanceof Function) {
-          if (trigger()) {
+        } else if (trigger.trigger instanceof Function) {
+          if (trigger.trigger()) {
             doTrigger(trigger);
           }
         } else if (message === trigger.trigger) {
