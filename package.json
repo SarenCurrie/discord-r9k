@@ -9,24 +9,10 @@
   },
   "author": "Saren Currie",
   "license": "MIT",
-  "eslintConfig": {
-    "extends": "eslint-config-airbnb",
-    "env": {
-      "node": true
-    },
-    "rules": {
-      "no-console": 0,
-      "max-len": ["error", {
-        "code": 140,
-        "tabWidth": 1,
-        "ignoreUrls": true,
-        "ignoreTrailingComments": true
-      }]
-    }
-  },
   "dependencies": {
     "discord.io": "^2.5.1",
-    "lokijs": "^1.4.3"
+    "lokijs": "^1.4.3",
+    "node-schedule": "^1.2.3"
   },
   "devDependencies": {
     "eslint": "^3.18.0",
