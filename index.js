@@ -1,5 +1,6 @@
 const Discord = require('discord.io');
-const exec = require('child_process').exec;
+const schedule = require('node-schedule');
+const statusUtils = require('./status-utils.js');
 const persistence = require('./persistence');
 
 if (!process.env.DISCORD_TOKEN) {
@@ -12,58 +13,146 @@ const bot = new Discord.Client({
   autorun: true,
 });
 
+const isEvents = channel => channel === '262864567695048705';
+
+const triggers = [];
+
+const addMessage = (trigger, action, ignoreEvents = true) => {
+  if (trigger instanceof Array) {
+    for (let i = 0; i < trigger.length; i += 1) {
+      triggers.push({ trigger: trigger[i], action, ignoreEvents });
+    }
+  } else {
+    triggers.push({ trigger, action, ignoreEvents });
+  }
+};
+
 bot.on('ready', () => {
   persistence.init(() => {
     console.log('Logged in as %s - %s\n', bot.username, bot.id);
 
     bot.on('disconnect', () => {
+      console.log('Disconnected, attempting to reconnect');
       bot.connect();
     });
 
+    const printHelp = () => triggers
+        .filter(trigger => typeof trigger.trigger === 'string')
+        .map(trigger => trigger.trigger)
+        .sort()
+        .reduce((a, b) => `${a}\n${b}`);
+
+    addMessage('!help', printHelp);
+    addMessage('!ping', () => {
+      console.log('pinged');
+      return 'pong';
+    });
+    addMessage(/saren/i, () => (Math.random() < 0.2 ? 'Who is this Saren character??? Hey Scur do you know who Saren is??' : null));
+
+    addMessage('!status', (opts) => {
+      let message = '';
+      statusUtils.getBattery.then((battery) => {
+        message = message.concat(battery).concat('\n');
+      }).catch(() => {}) // Ignore errors
+      .then(() => {
+        console.log('Second then called...');
+        message = message.concat(statusUtils.getUptime());
+        opts.bot.sendMessage({
+          to: opts.channelId,
+          message,
+        });
+      });
+    });
+    addMessage('!battery', (opts) => {
+      statusUtils.getBattery.then((battery) => {
+        opts.bot.sendMessage({
+          to: opts.channelId,
+          message: battery,
+        });
+      }).catch(() => {
+        opts.bot.sendMessage({
+          to: opts.channelId,
+          message: 'Error getting battery data.',
+        });
+      });
+    });
+    addMessage('!uptime', statusUtils.getUptime);
+    addMessage('!events',
+        opts => (isEvents(opts.channelId) ? 'Check out the pinned messages!' : 'Check out the pinned messages in the #Events channel!'),
+        false);
+
+    try {
+      require('./secret-triggers.js').init(addMessage); // eslint-disable-line global-require
+    } catch (e) {
+      console.warn('secret-triggers.js does not exist, ignoring.');
+    }
+
     const handleMessage = (user, userId, channelId, message, event) => {
-      // ignore events channel
-      if (channelId === '262864567695048705') {
-        return;
-      }
+      let wasTrigger = false;
 
-      if (message.match(/saren/i) && user !== bot.username) {
-        bot.sendMessage({
-          to: channelId,
-          message: 'Who is this Saren character??? Hey Scur do you know who Saren is??',
-        });
-      }
+      // Ignore own messages and mysterious non existant messages
+      if (message && userId !== bot.id) {
+        const doTrigger = (trigger, matches) => {
+          console.log('triggered');
+          wasTrigger = true;
+          const result = trigger.action({
+            user,
+            userId,
+            channelId,
+            message,
+            event,
+            bot,
+            matches,
+          });
 
-      if (message === '!ping') {
-        bot.sendMessage({
-          to: channelId,
-          message: 'pong',
-        });
-      } else if (message === '!status') {
-        exec('cat /sys/class/power_supply/BAT0/status', (error, stdout) => {
-          if (error) {
+          console.log('sending this:');
+          console.log(result);
+          console.log(`to channel: ${channelId}`);
+
+          if (result) {
             bot.sendMessage({
               to: channelId,
-              message: 'Error getting status!',
+              message: result,
             });
-            return;
           }
-          bot.sendMessage({
-            to: channelId,
-            message: `Battery status: ${stdout}`,
-          });
-        });
-      } else if (user !== bot.username) {
-        persistence.checkMessage(message, () => {
-          console.log(`message exists: ${message}`);
-          bot.deleteMessage({
-            channelID: channelId,
-            messageID: event.d.id,
-          }, (err) => {
-            if (err) {
-              console.log(err);
+        };
+
+        for (let i = 0; i < triggers.length; i += 1) {
+          const trigger = triggers[i];
+
+          // ignore events channel
+          if (trigger.ignoreEvents && isEvents(channelId)) {
+            // Skipping because this is the events channel.
+          } else if (trigger.trigger instanceof RegExp) {
+            const matches = message.match(trigger.trigger);
+            if (matches) {
+              doTrigger(trigger, matches);
             }
-          });
-        }, () => console.log(`message is new: ${message}`), err => console.error(err));
+          } else if (trigger.trigger instanceof Function) {
+            if (trigger.trigger()) {
+              doTrigger(trigger);
+            }
+          } else if (message === trigger.trigger) {
+            doTrigger(trigger);
+          }
+        }
+
+        if (!wasTrigger && !isEvents(channelId)) {
+          persistence.checkMessage(message, () => {
+            console.log(`message exists: ${message}`);
+
+            // TODO: Add support for delete reason in the audit log once discord.io adds support
+
+            bot.deleteMessage({
+              channelID: channelId,
+              messageID: event.d.id,
+            }, (err) => {
+              if (err) {
+                console.log(err);
+              }
+            });
+          }, () => console.log(`message is new: ${message}`), err => console.error(err));
+        }
       }
     };
 
@@ -80,3 +169,5 @@ bot.on('ready', () => {
     });
   });
 });
+
+exports.addMessage = addMessage;
