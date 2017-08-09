@@ -1,5 +1,4 @@
 const Discord = require('discord.io');
-const schedule = require('node-schedule');
 const statusUtils = require('./status-utils.js');
 const persistence = require('./persistence');
 
@@ -52,10 +51,11 @@ bot.on('ready', () => {
     addMessage('!status', (opts) => {
       let message = '';
       statusUtils.getBattery.then((battery) => {
+        // Add battry status to response if available
         message = message.concat(battery).concat('\n');
       }).catch(() => {}) // Ignore errors
       .then(() => {
-        console.log('Second then called...');
+        // Add uptime information to response, whether battery check was successful or not, then send message
         message = message.concat(statusUtils.getUptime());
         opts.bot.sendMessage({
           to: opts.channelId,
@@ -91,7 +91,7 @@ bot.on('ready', () => {
       let wasTrigger = false;
 
       // Ignore own messages and mysterious non existant messages
-      if (message && userId !== bot.id) {
+      if (message && userId !== bot.id && !message.startsWith('pls')) {
         const doTrigger = (trigger, matches) => {
           console.log('triggered');
           wasTrigger = true;

@@ -2,8 +2,14 @@ const Loki = require('lokijs');
 
 let db;
 let messages;
+let initialized = false;
 
 const init = (done) => {
+  if (initialized) {
+    return;
+  }
+
+  initialized = true;
   db = new Loki('loki.json');
 
   db.loadDatabase({}, (err) => {
