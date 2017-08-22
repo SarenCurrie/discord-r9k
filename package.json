@@ -12,7 +12,7 @@
   "dependencies": {
     "discord.io": "^2.5.1",
     "lokijs": "^1.4.3",
-    "node-schedule": "^1.2.3"
+    "node-schedule": "^1.2.4"
   },
   "devDependencies": {
     "eslint": "^3.18.0",

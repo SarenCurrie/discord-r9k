@@ -1,4 +1,5 @@
 const Discord = require('discord.io');
+const schedule = require('node-schedule');
 const statusUtils = require('./status-utils.js');
 const persistence = require('./persistence');
 
@@ -12,6 +13,7 @@ const bot = new Discord.Client({
   autorun: true,
 });
 
+const DEV_NULL_CHANNEL = '349421970083020801';
 const isEvents = channel => channel === '262864567695048705';
 
 const triggers = [];
@@ -166,6 +168,23 @@ bot.on('ready', () => {
             event.d.content,
             event);
       }
+    });
+
+    schedule.scheduleJob('*/5 * * * *', () => {
+      bot.getMessages({ channelID: DEV_NULL_CHANNEL, limit: 100 }, (err, messages) => {
+        if (err) {
+          console.error(err);
+        } else {
+          for (let i = 0; i < messages.length; i += 1) {
+            if (Date.now() - messages[i].creationTime > 5 * 60 * 1000) {
+              bot.deleteMessage({
+                channelID: DEV_NULL_CHANNEL,
+                messageID: messages[i].id,
+              });
+            }
+          }
+        }
+      });
     });
   });
 });
