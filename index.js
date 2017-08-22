@@ -1,6 +1,8 @@
 const Discord = require('discord.io');
+const schedule = require('node-schedule');
 const statusUtils = require('./status-utils.js');
 const persistence = require('./persistence');
+const getPrice = require('./get-price');
 
 if (!process.env.DISCORD_TOKEN) {
   console.error('DISCORD_TOKEN not set!');
@@ -12,6 +14,7 @@ const bot = new Discord.Client({
   autorun: true,
 });
 
+const TECH_CHANNEL = '262866463675777024';
 const isEvents = channel => channel === '262864567695048705';
 
 const triggers = [];
@@ -64,7 +67,7 @@ bot.on('ready', () => {
       });
     });
     addMessage('!battery', (opts) => {
-      statusUtils.getBattery.then((battery) => {
+      statusUtils.getBattery().then((battery) => {
         opts.bot.sendMessage({
           to: opts.channelId,
           message: battery,
@@ -80,6 +83,11 @@ bot.on('ready', () => {
     addMessage('!events',
         opts => (isEvents(opts.channelId) ? 'Check out the pinned messages!' : 'Check out the pinned messages in the #Events channel!'),
         false);
+
+    addMessage('!markets', opts => getPrice().then(prices => opts.bot.sendMessage({
+      to: opts.channelId,
+      message: prices,
+    })));
 
     try {
       require('./secret-triggers.js').init(addMessage); // eslint-disable-line global-require
@@ -167,6 +175,11 @@ bot.on('ready', () => {
             event);
       }
     });
+
+    schedule.scheduleJob('30 17 * * 1-5', () => getPrice().then(prices => bot.sendMessage({
+      to: TECH_CHANNEL,
+      message: prices,
+    })));
   });
 });
 

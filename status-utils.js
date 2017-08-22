@@ -3,7 +3,7 @@ const os = require('os');
 
 const startTime = Date.now();
 
-exports.getBattery = new Promise((resolve, reject) => {
+exports.getBattery = () => new Promise((resolve, reject) => {
   if (os.type() === 'Linux') {
     exec('cat /sys/class/power_supply/BAT0/status', (error, stdout) => {
       if (error) {
