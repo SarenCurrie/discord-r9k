@@ -14,6 +14,9 @@ const bot = new Discord.Client({
 });
 
 const DEV_NULL_CHANNEL = '349421970083020801';
+const DEV_NULL_CHECK_FREQUENCY = 10;
+const DEV_NULL_MIN_AGE = 5;
+
 const isEvents = channel => channel === '262864567695048705';
 
 const triggers = [];
@@ -170,19 +173,16 @@ bot.on('ready', () => {
       }
     });
 
-    schedule.scheduleJob('*/5 * * * *', () => {
+    schedule.scheduleJob(`*/${DEV_NULL_CHECK_FREQUENCY} * * * *`, () => {
+      console.log('trying to clear messages.');
       bot.getMessages({ channelID: DEV_NULL_CHANNEL, limit: 100 }, (err, messages) => {
         if (err) {
           console.error(err);
         } else {
-          for (let i = 0; i < messages.length; i += 1) {
-            if (Date.now() - messages[i].creationTime > 5 * 60 * 1000) {
-              bot.deleteMessage({
-                channelID: DEV_NULL_CHANNEL,
-                messageID: messages[i].id,
-              });
-            }
-          }
+          bot.deleteMessages({
+            channelID: DEV_NULL_CHANNEL,
+            messageIDs: messages.filter(m => Date.now() - new Date(m.timestamp).valueOf() > DEV_NULL_MIN_AGE * 60 * 1000).map(m => m.id),
+          });
         }
       });
     });
