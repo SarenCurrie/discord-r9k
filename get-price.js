@@ -1,13 +1,13 @@
 const yahooFinance = require('yahoo-finance');
 
 module.exports = () => {
-  const logos = {
+  const securities = {
     'ERD.NZ': '<:eroad:349675137995374592>',
     'OHE.NZ': '<:orion:330132803243212801>',
     'VGL.NZ': '<:vista:349674926736801805>',
   };
 
-  const getLogo = symbol => logos[symbol] || null;
+  const getLogo = symbol => securities[symbol] || null;
   const getTrend = (quote) => {
     if (quote.price - quote.close > 0) {
       return ':chart_with_upwards_trend:';
@@ -18,20 +18,8 @@ module.exports = () => {
   };
 
   return new Promise((resolve, reject) => {
-    Promise.all([
-      yahooFinance.quote({
-        symbol: 'OHE.NZ',
-        modules: ['price', 'summaryDetail'],
-      }),
-      yahooFinance.quote({
-        symbol: 'ERD.NZ',
-        modules: ['price', 'summaryDetail'],
-      }),
-      yahooFinance.quote({
-        symbol: 'VGL.NZ',
-        modules: ['price', 'summaryDetail'],
-      }),
-    ]).then((quotes) => {
+    Promise.all(Object.keys(securities).map(symbol => yahooFinance.quote({ symbol, modules: ['price', 'summaryDetail'] })))
+    .then((quotes) => {
       resolve(quotes.map(q => ({
         symbol: q.price.symbol,
         price: q.price.regularMarketPrice,
