@@ -101,7 +101,6 @@ bot.on('ready', () => {
       // Ignore own messages and mysterious non existant messages
       if (message && userId !== bot.id && !message.startsWith('pls')) {
         const doTrigger = (trigger, matches) => {
-          console.log('triggered');
           wasTrigger = true;
           const result = trigger.action({
             user,
@@ -113,11 +112,7 @@ bot.on('ready', () => {
             matches,
           });
 
-          console.log('sending this:');
-          console.log(result);
-          console.log(`to channel: ${channelId}`);
-
-          if (result) {
+          if (result && typeof result === 'string') {
             bot.sendMessage({
               to: channelId,
               message: result,

@@ -2,9 +2,9 @@ const yahooFinance = require('yahoo-finance');
 
 module.exports = () => {
   const logos = {
-    'ERD.NZ': ':eroad:',
-    'OHE.NZ': ':orion:',
-    'VGL.NZ': ':vista:',
+    'ERD.NZ': '<:eroad:349675137995374592>',
+    'OHE.NZ': '<:orion:330132803243212801>',
+    'VGL.NZ': '<:vista:349674926736801805>',
   };
 
   const getLogo = symbol => logos[symbol] || null;
@@ -14,7 +14,7 @@ module.exports = () => {
     } else if (quote.price - quote.close < 0) {
       return ':chart_with_downwards_trend:';
     }
-    return ':expressionless';
+    return ':expressionless:';
   };
 
   return new Promise((resolve, reject) => {
@@ -39,7 +39,8 @@ module.exports = () => {
         cap: q.summaryDetail.marketCap,
       }))
       .sort((a, b) => b.cap - a.cap)
-      .map(quote => `${getLogo(quote.symbol) || quote.symbol}: $${quote.price.toFixed(2)} ${getTrend(quote)} ${Math.abs(quote.price - quote.close).toFixed(2)}`)
+      .map(quote =>
+          `${getLogo(quote.symbol) || quote.symbol}: \`$${quote.price.toFixed(2)}\` ${getTrend(quote)} \`${Math.abs(quote.price - quote.close).toFixed(2)}\``)
       .reduce((a, b) => `${a}\n${b}`));
     }).catch(err => reject(err));
   });
