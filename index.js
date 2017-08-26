@@ -171,7 +171,7 @@ bot.on('ready', () => {
       }
     });
 
-    schedule.scheduleJob('30 17 * * 1-5', () => getPrice().then(prices => bot.sendMessage({
+    schedule.scheduleJob('30 5 * * 1-5', () => getPrice().then(prices => bot.sendMessage({
       to: TECH_CHANNEL,
       message: prices,
     })));
