@@ -84,10 +84,21 @@ bot.on('ready', () => {
         opts => (isEvents(opts.channelId) ? 'Check out the pinned messages!' : 'Check out the pinned messages in the #Events channel!'),
         false);
 
-    addMessage('!markets', opts => getPrice().then(prices => opts.bot.sendMessage({
-      to: opts.channelId,
-      message: prices,
-    })));
+    addMessage(/!markets\s?(.*)/i, (opts) => {
+      let query;
+      if (opts.matches[1] !== '') {
+        query = getPrice.single(opts.matches[1]);
+      } else {
+        query = getPrice.all();
+      }
+      query.then(prices => opts.bot.sendMessage({
+        to: opts.channelId,
+        message: prices.reduce((a, b) => `${a}\n\n${b}`),
+      })).catch(err => opts.bot.sendMessage({
+        to: opts.channelId,
+        message: err,
+      }));
+    });
 
     try {
       require('./secret-triggers.js').init(addMessage); // eslint-disable-line global-require
@@ -173,7 +184,10 @@ bot.on('ready', () => {
 
     schedule.scheduleJob('30 5 * * 1-5', () => getPrice().then(prices => bot.sendMessage({
       to: TECH_CHANNEL,
-      message: prices,
+      message: prices.reduce((a, b) => `${a}\n\n${b}`),
+    })).catch(err => bot.sendMessage({
+      to: TECH_CHANNEL,
+      message: `SCRIPT CRASH! ${err}`,
     })));
   });
 });
