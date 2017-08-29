@@ -176,7 +176,7 @@ bot.on('ready', () => {
     bot.on('message', handleMessage);
 
     bot.on('any', (event) => {
-      if (event.t === 'MESSAGE_UPDATE') {
+      if (event.t === 'MESSAGE_UPDATE' && !event.d.pinned) {
         handleMessage(event.d.author ? event.d.author.username : null,
             event.d.author ? event.d.author.id : null,
             event.d.channel_id,
