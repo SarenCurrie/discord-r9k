@@ -109,71 +109,93 @@ bot.on('ready', () => {
     const handleMessage = (user, userId, channelId, message, event) => {
       let wasTrigger = false;
 
-      // Ignore own messages and mysterious non existant messages
-      if (message && userId !== bot.id && !message.startsWith('pls')) {
-        const doTrigger = (trigger, matches) => {
-          wasTrigger = true;
-          const result = trigger.action({
-            user,
-            userId,
-            channelId,
-            message,
-            event,
-            bot,
-            matches,
+      // Ignore mysertious non-existant messages
+      if (!message) {
+        return;
+      }
+
+      // Ignore own messages
+      if (userId === bot.id) {
+        return;
+      }
+
+      // Ignore messages for the music bot
+      if (message.startsWith('pls')) {
+        return;
+      }
+
+      // Ignore image posts
+      if (event.d.attachments.length !== 0) {
+        return;
+      }
+
+      const doTrigger = (trigger, matches) => {
+        console.log('triggered');
+        wasTrigger = true;
+        const result = trigger.action({
+          user,
+          userId,
+          channelId,
+          message,
+          event,
+          bot,
+          matches,
+        });
+
+        console.log('sending this:');
+        console.log(result);
+        console.log(`to channel: ${channelId}`);
+
+        if (result && typeof result === 'string') {
+          bot.sendMessage({
+            to: channelId,
+            message: result,
           });
+        }
+      };
 
-          if (result && typeof result === 'string') {
-            bot.sendMessage({
-              to: channelId,
-              message: result,
-            });
+      for (let i = 0; i < triggers.length; i += 1) {
+        const trigger = triggers[i];
+
+        // ignore events channel
+        if (trigger.ignoreEvents && isEvents(channelId)) {
+          // Skipping because this is the events channel.
+        } else if (trigger.trigger instanceof RegExp) {
+          const matches = message.match(trigger.trigger);
+          if (matches) {
+            doTrigger(trigger, matches);
           }
-        };
-
-        for (let i = 0; i < triggers.length; i += 1) {
-          const trigger = triggers[i];
-
-          // ignore events channel
-          if (trigger.ignoreEvents && isEvents(channelId)) {
-            // Skipping because this is the events channel.
-          } else if (trigger.trigger instanceof RegExp) {
-            const matches = message.match(trigger.trigger);
-            if (matches) {
-              doTrigger(trigger, matches);
-            }
-          } else if (trigger.trigger instanceof Function) {
-            if (trigger.trigger()) {
-              doTrigger(trigger);
-            }
-          } else if (message === trigger.trigger) {
+        } else if (trigger.trigger instanceof Function) {
+          if (trigger.trigger()) {
             doTrigger(trigger);
           }
+        } else if (message === trigger.trigger) {
+          doTrigger(trigger);
         }
+      }
 
-        if (!wasTrigger && !isEvents(channelId)) {
-          persistence.checkMessage(message, () => {
-            console.log(`message exists: ${message}`);
+      if (!wasTrigger && !isEvents(channelId)) {
+        persistence.checkMessage(message, () => {
+          console.log(`message exists: ${message}`);
 
-            // TODO: Add support for delete reason in the audit log once discord.io adds support
+          // TODO: Add support for delete reason in the audit log once discord.io adds support
 
-            bot.deleteMessage({
-              channelID: channelId,
-              messageID: event.d.id,
-            }, (err) => {
-              if (err) {
-                console.log(err);
-              }
-            });
-          }, () => console.log(`message is new: ${message}`), err => console.error(err));
-        }
+          bot.deleteMessage({
+            channelID: channelId,
+            messageID: event.d.id,
+          }, (err) => {
+            if (err) {
+              console.log(err);
+            }
+          });
+        }, () => console.log(`message is new: ${message}`), err => console.error(err));
       }
     };
 
     bot.on('message', handleMessage);
 
     bot.on('any', (event) => {
-      if (event.t === 'MESSAGE_UPDATE') {
+      if (event.t === 'MESSAGE_UPDATE' && !event.d.pinned) {
         handleMessage(event.d.author ? event.d.author.username : null,
             event.d.author ? event.d.author.id : null,
             event.d.channel_id,
