@@ -1,6 +1,8 @@
 const Discord = require('discord.io');
+const schedule = require('node-schedule');
 const statusUtils = require('./status-utils.js');
 const persistence = require('./persistence');
+const getPrice = require('./get-price');
 
 if (!process.env.DISCORD_TOKEN) {
   console.error('DISCORD_TOKEN not set!');
@@ -12,6 +14,7 @@ const bot = new Discord.Client({
   autorun: true,
 });
 
+const TECH_CHANNEL = '262866463675777024';
 const isEvents = channel => channel === '262864567695048705';
 
 const triggers = [];
@@ -64,7 +67,7 @@ bot.on('ready', () => {
       });
     });
     addMessage('!battery', (opts) => {
-      statusUtils.getBattery.then((battery) => {
+      statusUtils.getBattery().then((battery) => {
         opts.bot.sendMessage({
           to: opts.channelId,
           message: battery,
@@ -80,6 +83,22 @@ bot.on('ready', () => {
     addMessage('!events',
         opts => (isEvents(opts.channelId) ? 'Check out the pinned messages!' : 'Check out the pinned messages in the #Events channel!'),
         false);
+
+    addMessage(/!markets\s?(.*)/i, (opts) => {
+      let query;
+      if (opts.matches[1] !== '') {
+        query = getPrice.single(opts.matches[1]);
+      } else {
+        query = getPrice.all();
+      }
+      query.then(prices => opts.bot.sendMessage({
+        to: opts.channelId,
+        message: prices.reduce((a, b) => `${a}\n\n${b}`),
+      })).catch(err => opts.bot.sendMessage({
+        to: opts.channelId,
+        message: err,
+      }));
+    });
 
     try {
       require('./secret-triggers.js').init(addMessage); // eslint-disable-line global-require
@@ -127,7 +146,7 @@ bot.on('ready', () => {
         console.log(result);
         console.log(`to channel: ${channelId}`);
 
-        if (result) {
+        if (result && typeof result === 'string') {
           bot.sendMessage({
             to: channelId,
             message: result,
@@ -184,6 +203,14 @@ bot.on('ready', () => {
             event);
       }
     });
+
+    schedule.scheduleJob('30 5 * * 1-5', () => getPrice().then(prices => bot.sendMessage({
+      to: TECH_CHANNEL,
+      message: prices.reduce((a, b) => `${a}\n\n${b}`),
+    })).catch(err => bot.sendMessage({
+      to: TECH_CHANNEL,
+      message: `SCRIPT CRASH! ${err}`,
+    })));
   });
 });
 
