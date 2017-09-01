@@ -111,7 +111,8 @@ bot.on('ready', () => {
     }
 
     const handleMessage = (user, userId, channelId, message, event) => {
-      let wasTrigger = false;
+      const botPrefixes = ['pls', '?'];
+      let wasTrigger = message.startsWith('!');
 
       // Ignore mysertious non-existant messages
       if (!message) {
@@ -123,8 +124,14 @@ bot.on('ready', () => {
         return;
       }
 
-      // Ignore messages for the music bot
-      if (message.startsWith('pls')) {
+      // Ignore messages for other bots
+      if (botPrefixes.some(p => message.startsWith(p))) {
+        return;
+      }
+
+      // Ignore other bots
+      if (event.d.author && event.d.author.bot) {
+        console.log('Ignoring bot post.');
         return;
       }
 
