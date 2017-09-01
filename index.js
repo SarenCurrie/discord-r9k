@@ -88,7 +88,7 @@ bot.on('ready', () => {
         opts => (isEvents(opts.channelId) ? 'Check out the pinned messages!' : 'Check out the pinned messages in the #Events channel!'),
         false);
 
-    addMessage(/!markets\s?(.*)/i, (opts) => {
+    addMessage(/^!markets\s?(.*)$/, (opts) => {
       let query;
       if (opts.matches[1] !== '') {
         query = getPrice.single(opts.matches[1]);
