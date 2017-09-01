@@ -222,7 +222,8 @@ bot.on('ready', () => {
       });
     });
 
-    schedule.scheduleJob('30 5 * * 1-5', () => getPrice().then(prices => bot.sendMessage({
+
+    schedule.scheduleJob('30 5 * * 1-5', () => getPrice.all().then(prices => bot.sendMessage({
       to: TECH_CHANNEL,
       message: prices.reduce((a, b) => `${a}\n\n${b}`),
     })).catch(err => bot.sendMessage({
