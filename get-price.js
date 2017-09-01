@@ -74,8 +74,8 @@ const getYahooPricesForGroup = securities => new Promise((resolve, reject) => {
       cap: q.summaryDetail.marketCap,
     }))
     .sort((a, b) => b.cap - a.cap)
-    .map(quote =>
-        `${getLogo(quote.symbol) || quote.symbol}: \`$${quote.price.toFixed(2)} ${securities.currency}\` ${getTrend(quote)} \`${Math.abs(quote.price - quote.close).toFixed(2)}\``)
+    .map(q =>
+        `${getLogo(q.symbol) || q.symbol}: \`$${q.price.toFixed(2)} ${securities.currency}\` ${getTrend(q)} \`${Math.abs(q.price - q.close).toFixed(2)}\``)
     .reduce((a, b) => `${a}\n\t${b}`, `**${securities.heading}**`));
   }).catch(err => reject(err));
 });
@@ -86,4 +86,5 @@ const getPrices = securities => getYahooPrices(securities);
 
 exports.all = () => getPrices(Object.values(groups));
 exports.single = name =>
-    (groups[name] ? getPrices([groups[name]]) : Promise.reject(`Do not have a group called ${name}. try ${Object.keys(groups).reduce((a, b) => `${a}, ${b}`)}`));
+    (groups[name] ? getPrices([groups[name]]) :
+    Promise.reject(`Do not have a group called ${name}. try ${Object.keys(groups).reduce((a, b) => `${a}, ${b}`)}`));
