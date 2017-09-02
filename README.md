@@ -1,10 +1,12 @@
 # discord-r9k
 
-An experimental [Robot 9000](https://blog.xkcd.com/2008/01/14/robot9000-and-xkcd-signal-attacking-noise-in-chat/) for Discord.
+An experimental [Robot 9000](https://blog.xkcd.com/2008/01/14/robot9000-and-xkcd-signal-attacking-noise-in-chat/) for Discord. Currently supports tracking and deleting duplicate messages, clearing specific channels after a given time, and responding to specific trigger phrases.
 
 ## Usage
 
-First, o to the [Discord developer documentation](https://discordapp.com/developers/), create an app and get your token.
+Note: requires node.js v8.
+
+First, go to the [Discord developer documentation](https://discordapp.com/developers/), create an app and get your token.
 
 ```
 export DISCORD_TOKEN=<token>
@@ -20,11 +22,13 @@ The bot as it is currently has a lot of things tuned to my personal discord serv
 
 ### `addMessage(trigger, callback)`
 
-#### `tirgger`
+#### `trigger`
 
-A String, RegExp or Array, that will trigger this event.
+A The trigger can be one of the following types:
 
-If a String is provided, the callback will be triggered if the message matches the String exactly; if a RegExp is provided, if the message matches the RegExp, the callback will be triggered, the callback argument will include the list of matches returned by [`String.match()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match); if an Array is provided, all elements will be treated as seperate triggers.
+- `String` The callback will be triggered if the message matches the String exactly
+- `RegExp` If the message matches the RegExp, the callback will be triggered, the callback argument will include the list of matches returned by [`String.match()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match)
+- `Array` All array elements are treated as separate triggers
 
 #### `callback`
 
