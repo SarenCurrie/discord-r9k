@@ -3,6 +3,7 @@ const schedule = require('node-schedule');
 const statusUtils = require('./status-utils.js');
 const persistence = require('./persistence');
 const getPrice = require('./get-price');
+const pkg = require('./package.json');
 
 if (!process.env.DISCORD_TOKEN) {
   console.error('DISCORD_TOKEN not set!');
@@ -48,7 +49,10 @@ bot.on('ready', () => {
         .sort()
         .reduce((a, b) => `${a}\n${b}`);
 
+    const printVersion = () => `I'm currently running version ${pkg.version}`;
+
     addMessage('!help', printHelp);
+    addMessage('!version', printVersion);
     addMessage('!ping', () => {
       console.log('pinged');
       return 'pong';
