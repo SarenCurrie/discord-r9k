@@ -53,7 +53,6 @@ bot.on('ready', () => {
       console.log('pinged');
       return 'pong';
     });
-    addMessage(/saren/i, () => (Math.random() < 0.2 ? 'Who is this Saren character??? Hey Scur do you know who Saren is??' : null));
 
     addMessage('!status', (opts) => {
       let message = '';
