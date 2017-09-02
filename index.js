@@ -4,6 +4,7 @@ const statusUtils = require('./status-utils.js');
 const persistence = require('./persistence');
 const getPrice = require('./get-price');
 const pkg = require('./package.json');
+const karma = require('./karma');
 
 if (!process.env.DISCORD_TOKEN) {
   console.error('DISCORD_TOKEN not set!');
@@ -106,6 +107,13 @@ bot.on('ready', () => {
         message: err,
       }));
     });
+
+    addMessage(/<@(\d+)>\s?\+{2}/i, (opts) => {
+      const id = opts.matches[1];
+      return karma.add(id);
+    });
+
+    addMessage('!karma', karma.show());
 
     try {
       require('./secret-triggers.js').init(addMessage); // eslint-disable-line global-require, no-unresolved

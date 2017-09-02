@@ -29,6 +29,27 @@ const init = (done) => {
 
 exports.init = init;
 
+exports.addKarma = (userId) => {
+  // Check collection exitst, otherwise create it
+  let users = db.getCollection('users');
+  if (!users) {
+    users = db.addCollection('users', { indices: ['id', 'karma'] });
+  }
+
+  // Check user exitst, otherwise create it
+  let userExists = users.find({'id': userId}).length > 0;
+  if (!userExists) {
+    users.insert({ 'id': userId, 'karma': 0 });
+  }
+
+  let user = users.find({'id': userId})[0]; // Assume id is unique
+  user.karma++;
+  users.update(user)
+
+  console.log(`Updated <@${userId}>'s karma to ${user.karma}`);
+  return `<@${userId}>'s karma has increased to ${user.karma}`;
+};
+
 exports.checkMessage = (message, updated, created, error) => {
   const updateMessage = () => {
     let toCall;
