@@ -108,12 +108,23 @@ bot.on('ready', () => {
       }));
     });
 
-    addMessage(/<@(\d+)>\s?\+{2}/i, (opts) => {
+    addMessage(/<@(\d+)>\s?(\+{2}|--)/i, (opts) => {
       const id = opts.matches[1];
-      return karma.add(id);
+      const mod = opts.matches[2]; // Karma modifier
+
+      // Check if message was edited (TODO: make this better by tracking which messages have granted karma before)
+      if (opts.event.t === 'MESSAGE_UPDATE') { return null; }
+
+      // check if user matches target
+      if (opts.userId === id) { return `I'm sorry <@${id}>, I can't do that.`; }
+
+      return karma.update(id, mod);
     });
 
-    addMessage('!karma', karma.show());
+    addMessage('!karma', (opts) => {
+      const users = opts.bot.users;
+      return karma.show(users);
+    });
 
     try {
       require('./secret-triggers.js').init(addMessage); // eslint-disable-line global-require, no-unresolved

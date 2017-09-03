@@ -29,25 +29,52 @@ const init = (done) => {
 
 exports.init = init;
 
-exports.addKarma = (userId) => {
-  // Check collection exitst, otherwise create it
+function userCollection() {
+  // Check collection exists, otherwise create it
   let users = db.getCollection('users');
   if (!users) {
     users = db.addCollection('users', { indices: ['id', 'karma'] });
   }
+  return users;
+}
 
-  // Check user exitst, otherwise create it
-  let userExists = users.find({'id': userId}).length > 0;
-  if (!userExists) {
-    users.insert({ 'id': userId, 'karma': 0 });
+function getUser(userId) {
+  const users = userCollection();
+  let user = users.findOne({ id: userId });
+
+  if (!user) {
+    console.log(`Creating karma entry for user id ${userId}`);
+    users.insert({ id: userId, karma: 0 });
+    user = users.findOne({ id: userId });
   }
+  return user;
+}
 
-  let user = users.find({'id': userId})[0]; // Assume id is unique
-  user.karma++;
-  users.update(user)
+exports.addKarma = (userId, diff) => {
+  const users = userCollection();
+  const user = getUser(userId);
+  const oldKarma = user.karma;
+  const newKarma = oldKarma + diff;
+  const translate = { true: 'increased', false: 'decreased' };
 
-  console.log(`Updated <@${userId}>'s karma to ${user.karma}`);
-  return `<@${userId}>'s karma has increased to ${user.karma}`;
+  user.karma = newKarma;
+  users.update(user);
+  db.saveDatabase();
+
+  console.log(`Karma for ${userId} was ${translate[diff > 0]} to ${user.karma}`);
+
+  return `<@${userId}>'s karma has ${translate[diff > 0]} to ${newKarma}`;
+};
+
+exports.getKarma = () => {
+  const users = userCollection();
+  let ranking = users.getDynamicView('Karma Ranking');
+
+  if (!ranking) {
+    ranking = users.addDynamicView('Karma Ranking');
+    ranking.applySimpleSort('karma', true);
+  }
+  return ranking.data();
 };
 
 exports.checkMessage = (message, updated, created, error) => {
