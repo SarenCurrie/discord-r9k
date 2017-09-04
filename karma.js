@@ -18,10 +18,11 @@ function formatRanking(data, users) {
 
   for (let i = 0; i < data.length; i++) {
     const user = data[i];
+    if (!users[user.id]) { continue; } // Skip missing users
     const username = users[user.id].username;
     const pos = i + 1;
 
-    output += `\n${pos}. ${username} - ${user.karma} karma`;
+    output += `\n${pos}. ${username}: ${user.karma} karma`;
   }
   output += '\n```';
   return output;
