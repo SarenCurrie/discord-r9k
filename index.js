@@ -116,7 +116,7 @@ bot.on('ready', () => {
       if (opts.event.t === 'MESSAGE_UPDATE') { return null; }
 
       // check if user matches target
-      if (opts.userId === id) { return `I'm sorry <@${id}>, I can't do that.`; }
+      if (opts.userId === id) { return `I'm sorry, <@${id}>. I'm afraid I can't do that.`; }
 
       return karma.update(id, mod);
     });
