@@ -127,7 +127,7 @@ bot.on('ready', () => {
     });
 
     try {
-      require('./secret-triggers.js').init(addMessage); // eslint-disable-line global-require, no-unresolved
+      require('./secret-triggers.js').init(addMessage); // eslint-disable-line global-require, import/no-unresolved
     } catch (e) {
       console.warn('secret-triggers.js does not exist, ignoring.');
     }
