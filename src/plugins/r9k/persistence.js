@@ -10,7 +10,7 @@ const init = (done) => {
   }
 
   initialized = true;
-  db = new Loki('loki.json');
+  db = new Loki('./data/r9k.loki.json');
 
   db.loadDatabase({}, (err) => {
     if (err) {

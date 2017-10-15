@@ -1,5 +1,5 @@
 # Database
-loki.json
+data/
 
 # Secret triggers
 secret-triggers.js
