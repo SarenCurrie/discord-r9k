@@ -1,33 +1,7 @@
 const Loki = require('lokijs');
 
 let db;
-let messages;
 let initialized = false;
-
-const init = (done) => {
-  if (initialized) {
-    return;
-  }
-
-  initialized = true;
-  db = new Loki('loki.json');
-
-  db.loadDatabase({}, (err) => {
-    if (err) {
-      done(err);
-    }
-
-    messages = db.getCollection('messages');
-    if (!messages) {
-      messages = db.addCollection('messages', {
-        indicies: 'message',
-      });
-    }
-    done();
-  });
-};
-
-exports.init = init;
 
 function userCollection() {
   // Check collection exists, otherwise create it
@@ -37,6 +11,27 @@ function userCollection() {
   }
   return users;
 }
+
+const init = (done) => {
+  if (initialized) {
+    return;
+  }
+
+  initialized = true;
+  db = new Loki('./data/karma.loki.json');
+
+  db.loadDatabase({}, (err) => {
+    if (err) {
+      done(err);
+    }
+
+    userCollection();
+
+    done();
+  });
+};
+
+exports.init = init;
 
 function getUser(userId) {
   const users = userCollection();
@@ -59,7 +54,7 @@ exports.addKarma = (userId, diff) => {
 
   user.karma = newKarma;
   users.update(user);
-  db.saveDatabase();
+  db.saveDatabase(err => console.error(err));
 
   console.log(`Karma for ${userId} was ${translate[diff > 0]} to ${user.karma}`);
 
@@ -75,48 +70,4 @@ exports.getKarma = () => {
     ranking.applySimpleSort('karma', true);
   }
   return ranking.data();
-};
-
-exports.checkMessage = (message, updated, created, error) => {
-  const updateMessage = () => {
-    let toCall;
-
-    const result = messages.findOne({
-      message,
-    });
-
-    if (!result) {
-      messages.insert({
-        message,
-        count: 1,
-      });
-
-      toCall = created;
-    } else {
-      result.count += 1;
-      messages.update(result);
-
-      toCall = updated;
-    }
-
-    db.saveDatabase((err) => {
-      if (err) {
-        console.error(err);
-      } else {
-        toCall();
-      }
-    });
-  };
-
-  if (!messages) {
-    init((err) => {
-      if (err) {
-        error(err);
-      } else {
-        updateMessage();
-      }
-    });
-  } else {
-    updateMessage();
-  }
 };
