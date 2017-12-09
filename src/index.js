@@ -36,7 +36,11 @@ app.init().then(() => {
 
   app.addMessageTrigger('!uptime', statusUtils.getUptime);
   app.addPlugin(r9k);
-  app.addPlugin(markets);
+
+  app.addPlugin(markets({
+    dailyUpdateChannel: '385585269287682048',
+    dailyUpdateTime: '30 4 * * *',
+  }));
   app.addPlugin(devNull({ channel: '349421970083020801' }));
 
   try {

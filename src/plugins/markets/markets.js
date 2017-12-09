@@ -209,31 +209,37 @@ const single = name =>
     (groups[name] ? getPrices([groups[name]]) :
     Promise.reject(`Do not have a group called ${name}. Try one of these: ${Object.keys(groups).reduce((a, b) => `${a}, ${b}`)}`));
 
-exports.init = (app) => {
-  app.addMessageTrigger(/^!markets\s?(.*)$/, (opts) => {
-    let query;
-    if (opts.matches[1] !== '') {
-      query = single(opts.matches[1]);
-    } else {
-      query = all();
-    }
-    query.then(prices => opts.bot.sendMessage({
-      to: opts.channelId,
-      message: prices
-        .reduce((a, b) => a.concat(b), []) // Flatten
-        .sort((a, b) => getSortPriority(a) - getSortPriority(b))
-        .reduce((a, b) => `${a}\n\n${b}`),
-    })).catch(err => opts.bot.sendMessage({
-      to: opts.channelId,
-      message: err,
-    }));
-  });
+module.exports = (opts) => {
+  const init = (app) => {
+    app.addMessageTrigger(/^!markets\s?(.*)$/, (opts) => {
+      let query;
+      if (opts.matches[1] !== '') {
+        query = single(opts.matches[1]);
+      } else {
+        query = all();
+      }
+      query.then(prices => opts.bot.sendMessage({
+        to: opts.channelId,
+        message: prices
+          .reduce((a, b) => a.concat(b), []) // Flatten
+          .sort((a, b) => getSortPriority(a) - getSortPriority(b))
+          .reduce((a, b) => `${a}\n\n${b}`),
+      })).catch(err => opts.bot.sendMessage({
+        to: opts.channelId,
+        message: err,
+      }));
+    });
 
-  app.addCronTrigger('30 5 * * 1-5', bot => all().then(prices => bot.sendMessage({
-    to: MARKETS_CHANNEL,
-    message: prices.reduce((a, b) => `${a}\n\n${b}`),
-  })).catch(err => bot.sendMessage({
-    to: MARKETS_CHANNEL,
-    message: `SCRIPT CRASH! ${err}`,
-  })));
+    if (opts.dailyUpdateChannel && opts.dailyUpdateTime) {
+      app.addCronTrigger(opts.dailyUpdateTime, bot => all().then(prices => bot.sendMessage({
+        to: opts.dailyUpdateChannel,
+        message: prices.reduce((a, b) => `${a}\n\n${b}`),
+      })).catch(err => bot.sendMessage({
+        to: opts.dailyUpdateChannel,
+        message: `SCRIPT CRASH! ${err}`,
+      })));
+    }
+  };
+
+  return { init };
 };
