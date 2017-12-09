@@ -99,8 +99,6 @@ const getSortPriority = (text) => {
   return Object.values(groups).findIndex(g => g.heading === groupName);
 };
 
-const MARKETS_CHANNEL = '385585269287682048';
-
 const yahooCache = {};
 const cmcCache = {};
 
@@ -209,7 +207,7 @@ const single = name =>
     (groups[name] ? getPrices([groups[name]]) :
     Promise.reject(`Do not have a group called ${name}. Try one of these: ${Object.keys(groups).reduce((a, b) => `${a}, ${b}`)}`));
 
-module.exports = (opts) => {
+module.exports = (settings) => {
   const init = (app) => {
     app.addMessageTrigger(/^!markets\s?(.*)$/, (opts) => {
       let query;
@@ -230,12 +228,12 @@ module.exports = (opts) => {
       }));
     });
 
-    if (opts.dailyUpdateChannel && opts.dailyUpdateTime) {
-      app.addCronTrigger(opts.dailyUpdateTime, bot => all().then(prices => bot.sendMessage({
-        to: opts.dailyUpdateChannel,
+    if (settings.dailyUpdateChannel && settings.dailyUpdateTime) {
+      app.addCronTrigger(settings.dailyUpdateTime, bot => all().then(prices => bot.sendMessage({
+        to: settings.dailyUpdateChannel,
         message: prices.reduce((a, b) => `${a}\n\n${b}`),
       })).catch(err => bot.sendMessage({
-        to: opts.dailyUpdateChannel,
+        to: settings.dailyUpdateChannel,
         message: `SCRIPT CRASH! ${err}`,
       })));
     }
