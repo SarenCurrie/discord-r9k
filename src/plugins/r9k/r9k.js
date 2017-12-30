@@ -1,5 +1,9 @@
 const persistence = require('./persistence');
 
+const HASH_CHANNELS = [
+  '361699287966416907',
+];
+
 exports.init = (app) => {
   persistence.init((error) => {
     if (error) {
@@ -44,7 +48,9 @@ exports.init = (app) => {
         return;
       }
 
-      persistence.checkMessage(message, () => {
+      const shouldHash = HASH_CHANNELS.includes(channelId);
+
+      persistence.checkMessage(message, shouldHash, () => {
         console.log(`message exists: ${message}`);
 
         // TODO: Add support for delete reason in the audit log once discord.io adds support
