@@ -10,6 +10,9 @@ module.exports = (opts) => {
           console.error(err);
         } else {
           const toDelete = messages
+              .sort((a, b) => b.timestamp - a.timestamp)
+              .slice(1) // Remove newest message
+              // Remove other messages that are too new
               .filter(m => Date.now() - new Date(m.timestamp).valueOf() > (opts.minAge || DEFAULT_MIN_AGE) * 60 * 1000)
               .map(m => m.id);
           if (toDelete.length > 1) {
