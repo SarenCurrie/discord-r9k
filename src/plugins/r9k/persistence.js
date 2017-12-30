@@ -2,6 +2,7 @@ const Loki = require('lokijs');
 
 let db;
 let messages;
+let hashedMessages;
 let initialized = false;
 
 const init = (done) => {
@@ -23,13 +24,19 @@ const init = (done) => {
         indicies: 'message',
       });
     }
+    hashedMessages = db.getCollection('hashedMessages');
+    if (!hashedMessages) {
+      hashedMessages = db.addCollection('hashedMessages', {
+        indicies: 'hash',
+      });
+    }
     done();
   });
 };
 
 exports.init = init;
 
-exports.checkMessage = (message, updated, created, error) => {
+exports.checkMessage = (message, shouldHash, updated, created, error) => {
   const updateMessage = () => {
     let toCall;
 
@@ -37,16 +44,45 @@ exports.checkMessage = (message, updated, created, error) => {
       message,
     });
 
-    if (!result) {
-      messages.insert({
-        message,
-        count: 1,
-      });
+    const hash = crypto.createHash('sha256');
+
+    hash.update(message);
+
+    const hashedMessage = hash.digest('hex');
+
+    const hashResult = hashedMessages.findOne({
+      hash: hashedMessage,
+    });
+
+    if (!result && !hashResult) {
+      if (shouldHash) {
+        hashedMessages.insert({
+          hash: hashedMessage,
+          count: 1,
+        });
+      } else {
+        messages.insert({
+          message,
+          count: 1,
+        });
+      }
 
       toCall = created;
     } else {
-      result.count += 1;
-      messages.update(result);
+      if (result) {
+        result.count += 1;
+        messages.update(result);
+      } else if (!shouldHash) {
+        console.log('Creating new entry as message only exists in hash store');
+        messages.insert({
+          message,
+          count: 1,
+        });
+      } else {
+        console.log('updating hash store');
+        hashResult.count += 1;
+        hashedMessages.update(hashResult);
+      }
 
       toCall = updated;
     }
