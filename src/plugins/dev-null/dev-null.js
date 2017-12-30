@@ -9,10 +9,20 @@ module.exports = (opts) => {
         if (err) {
           console.error(err);
         } else {
-          bot.deleteMessages({
-            channelID: opts.channel,
-            messageIDs: messages.filter(m => Date.now() - new Date(m.timestamp).valueOf() > (opts.minAge || DEFAULT_MIN_AGE) * 60 * 1000).map(m => m.id),
-          });
+          const toDelete = messages
+              .filter(m => Date.now() - new Date(m.timestamp).valueOf() > (opts.minAge || DEFAULT_MIN_AGE) * 60 * 1000)
+              .map(m => m.id);
+          if (toDelete.length > 1) {
+            bot.deleteMessages({
+              channelID: opts.channel,
+              messageIDs: toDelete,
+            });
+          } else if (toDelete.length === 1) {
+            bot.deleteMessage({
+              channelID: opts.channel,
+              messageID: toDelete[0],
+            });
+          }
         }
       });
     });
