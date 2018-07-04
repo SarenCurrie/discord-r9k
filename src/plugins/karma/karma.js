@@ -23,15 +23,14 @@ exports.init = (app) => {
     function formatRanking(data, users) {
       let output = 'Karma Summary:\n```';
 
-      for (let i = 0; i < data.length; i++) {
-        const user = data[i];
-        if (users[user.id]) {
-          const username = users[user.id].username;
-          const pos = i + 1;
+      data
+          .filter(user => users[user.id])
+          .forEach((user, index) => {
+            const username = users[user.id].username;
+            const pos = index + 1;
 
-          output += `\n${pos}. ${username}: ${user.karma} karma`;
-        }
-      }
+            output += `\n${pos}. ${username}: ${user.karma} karma`;
+          });
       output += '\n```';
       return output;
     }
