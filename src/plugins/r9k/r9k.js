@@ -45,8 +45,6 @@ exports.init = (app) => {
       }
 
       persistence.checkMessage(message, () => {
-        console.log(`message exists: ${message}`);
-
         // TODO: Add support for delete reason in the audit log once discord.io adds support
 
         event.bot.deleteMessage({
@@ -57,7 +55,7 @@ exports.init = (app) => {
             console.log(err);
           }
         });
-      }, () => console.log(`message is new: ${message}`), err => console.error(err));
+      }, () => {}, err => console.error(err));
     });
   });
 };
