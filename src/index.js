@@ -3,7 +3,6 @@ const statusUtils = require('./status-utils');
 const r9k = require('./plugins/r9k/r9k');
 const markets = require('./plugins/markets/markets');
 const devNull = require('./plugins/dev-null/dev-null');
-const karma = require('./plugins/karma/karma.js');
 
 app.init().then(() => {
   app.addMessageTrigger('!status', (opts) => {
@@ -43,7 +42,6 @@ app.init().then(() => {
     dailyUpdateTime: '30 4 * * *',
   }));
   app.addPlugin(devNull({ channel: '349421970083020801' }));
-  app.addPlugin(karma);
 
   try {
     app.addPlugin(require('./secret-triggers.js')); // eslint-disable-line global-require, import/no-unresolved
