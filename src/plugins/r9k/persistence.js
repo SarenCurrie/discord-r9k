@@ -20,9 +20,11 @@ const init = (done) => {
     messages = db.getCollection('messages');
     if (!messages) {
       messages = db.addCollection('messages', {
-        indicies: 'message',
+        indices: 'message',
       });
     }
+    messages.ensureIndex('message');
+    console.log('Done indexing, R9K ready!');
     done();
   });
 };
