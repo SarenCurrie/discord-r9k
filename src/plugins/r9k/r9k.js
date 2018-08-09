@@ -58,4 +58,8 @@ exports.init = (app) => {
       }, () => {}, err => console.error(err));
     });
   });
+
+  app.addCronTrigger('*/2 * * * *', () => {
+    persistence.save();
+  });
 };

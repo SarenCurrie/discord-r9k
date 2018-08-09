@@ -33,8 +33,6 @@ exports.init = init;
 
 exports.checkMessage = (message, updated, created, error) => {
   const updateMessage = () => {
-    let toCall;
-
     const result = messages.findOne({
       message,
     });
@@ -45,21 +43,13 @@ exports.checkMessage = (message, updated, created, error) => {
         count: 1,
       });
 
-      toCall = created;
+      created();
     } else {
       result.count += 1;
       messages.update(result);
 
-      toCall = updated;
+      updated();
     }
-
-    db.saveDatabase((err) => {
-      if (err) {
-        console.error(err);
-      } else {
-        toCall();
-      }
-    });
   };
 
   if (!messages) {
@@ -74,3 +64,11 @@ exports.checkMessage = (message, updated, created, error) => {
     updateMessage();
   }
 };
+
+exports.save = (cb) => db.saveDatabase((err) => {
+  if (err) {
+    console.error(err);
+  } else {
+    cb();
+  }
+});
