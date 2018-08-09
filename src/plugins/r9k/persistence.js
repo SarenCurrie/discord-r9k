@@ -69,6 +69,6 @@ exports.save = (cb) => db.saveDatabase((err) => {
   if (err) {
     console.error(err);
   } else {
-    cb();
+    cb && cb();
   }
 });
