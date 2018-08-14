@@ -3,27 +3,19 @@ const os = require('os');
 
 const startTime = Date.now();
 
-exports.getBattery = () => new Promise((resolve, reject) => {
+exports.getTemp = () => new Promise((resolve, reject) => {
   if (os.type() === 'Linux') {
-    exec('cat /sys/class/power_supply/BAT0/status', (error, stdout) => {
+    exec('/opt/vc/bin/vcgencmd measure_temp', (error, stdout) => {
       if (error) {
         reject(error);
       } else {
-        resolve(`**Battery status:** ${stdout}`);
-      }
-    });
-  } else if (os.type() === 'Darwin') { // macOS/OSX
-    exec('pmset -g batt', (error, stdout) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(`**Battery status:** ${stdout}`);
+        resolve(`**Thermal status:**\n${stdout}`);
       }
     });
   } else {
     // Defer rejection
     process.nextTick(() => {
-      reject(`Do not know how to get battery level for os ${os.type()}`);
+      reject(`Do not know how to get thermal status for os ${os.type()}`);
     });
   }
 });

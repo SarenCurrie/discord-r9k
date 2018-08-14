@@ -7,12 +7,12 @@ const devNull = require('./plugins/dev-null/dev-null');
 app.init().then(() => {
   app.addMessageTrigger('!status', (opts) => {
     let message = '';
-    statusUtils.getBattery.then((battery) => {
+    statusUtils.getTemp().then((temp) => {
       // Add battry status to response if available
-      message = message.concat(battery).concat('\n');
+      message = message.concat(temp).concat('\n');
     }).catch(() => {}) // Ignore errors
     .then(() => {
-      // Add uptime information to response, whether battery check was successful or not, then send message
+      // Add uptime information to response, whether temperature check was successful or not, then send message
       message = message.concat(statusUtils.getUptime());
       opts.bot.sendMessage({
         to: opts.channelId,
@@ -20,11 +20,11 @@ app.init().then(() => {
       });
     });
   });
-  app.addMessageTrigger('!battery', (opts) => {
-    statusUtils.getBattery().then((battery) => {
+  app.addMessageTrigger('!temp', (opts) => {
+    statusUtils.getTemp().then((temp) => {
       opts.bot.sendMessage({
         to: opts.channelId,
-        message: battery,
+        message: temp,
       });
     }).catch(() => {
       opts.bot.sendMessage({
