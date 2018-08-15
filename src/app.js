@@ -61,8 +61,10 @@ const init = () => new Promise((resolve, reject) => {
       console.log('Logged in as %s - %s\n', bot.username, bot.id);
 
       bot.on('disconnect', () => {
-        console.log('Disconnected, attempting to reconnect');
-        bot.connect();
+        console.log('Disconnected, attempting to reconnect in 60 seconds');
+        setTimeout(() => {
+          console.log(bot.connect());
+        }, 1000 * 60);
       });
 
       const printHelp = () => triggers
@@ -127,7 +129,6 @@ const init = () => new Promise((resolve, reject) => {
         let wasTrigger = false;
 
         if (!event.d) {
-          console.log('Ignoring event with no data.');
           return;
         }
 
