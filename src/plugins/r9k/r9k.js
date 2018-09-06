@@ -44,6 +44,11 @@ exports.init = (app) => {
         return;
       }
 
+      // Ignore karma bot
+      if (/<@!?\d+>\s*([+]{2,}|[-]{2,})/g.exec(message)) {
+        return;
+      }
+
       persistence.checkMessage(message, () => {
         // TODO: Add support for delete reason in the audit log once discord.io adds support
 
