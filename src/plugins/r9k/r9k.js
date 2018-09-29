@@ -38,7 +38,6 @@ exports.init = (app) => {
       // Ignore bot mentions
       const mention = /^<@!?(\d+)>/g.exec(message);
       if (mention && mention[1]) {
-        console.log(mention);
         const mentionedId = mention[1];
         const member = event.bot.servers[serverId].members[mentionedId];
         if (member.roles.some(roleId => event.bot.servers[serverId].roles[roleId].name === 'Bots')) {
