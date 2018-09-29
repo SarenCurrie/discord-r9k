@@ -9,6 +9,7 @@ exports.init = (app) => {
     app.addRawInterceptor(['MESSAGE_CREATE', 'MESSAGE_UPDATE'], true, (event) => {
       const message = event.event.d.content;
       const channelId = event.event.d.channel_id;
+      const serverId = event.event.d.guild_id;
       const author = event.event.d.author;
 
       if (!message || !channelId || !author) {
@@ -16,6 +17,7 @@ exports.init = (app) => {
       }
 
       const userId = author.id;
+      // TODO remove legacy bot triggers
       const botPrefixes = ['pls', '?'];
 
       // Ignore mysertious non-existant messages
@@ -31,6 +33,17 @@ exports.init = (app) => {
       // Ignore messages for other bots
       if (botPrefixes.some(p => message.startsWith(p))) {
         return;
+      }
+
+      // Ignore bot mentions
+      const mention = /^<@!?(\d+)>/g.exec(message);
+      if (mention && mention[1]) {
+        console.log(mention);
+        const mentionedId = mention[1];
+        const member = event.bot.servers[serverId].members[mentionedId];
+        if (member.roles.some(roleId => event.bot.servers[serverId].roles[roleId].name === 'Bots')) {
+          return;
+        }
       }
 
       // Ignore other bots
